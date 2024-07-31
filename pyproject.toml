@@ -1,7 +1,7 @@
 [project]
-name = "jma-gis-polygons"
+name = "jma-gis"
 version = "0.1.0"
-description = "Add your description here"
+description = "気象庁の「予報区等GISデータ」をもとにベクタータイルなどを生成します"
 authors = [
     { name = "MIERUNE Inc.", email = "info@mierune.co.jp" },
     { name = "Taku Fukada", email = "naninunenor@gmail.com" }

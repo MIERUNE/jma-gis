@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>JMA GIS</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.css"
+    />
+    <script src="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.js"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body,
+      #map {
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
+      const map = new maplibregl.Map({
+        container: "map",
+        style: {
+          id: "raster",
+          version: 8,
+          name: "Raster tiles",
+          center: [0, 0],
+          zoom: 0,
+          sources: {
+            "gsi-raster": {
+              type: "raster",
+              tiles: [
+                "https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg",
+              ],
+              tileSize: 256,
+              minzoom: 5,
+              maxzoom: 18,
+              attribution: "国土地理院",
+            },
+            // terrain: {
+            //   type: "raster-dem",
+            //   tiles: [
+            //     "https://...",
+            //   ],
+            // },
+            jma: {
+              type: "vector",
+              tiles: [
+                "https://jma-assets.mierune.dev/tiles/mete/{z}/{x}/{y}.pbf",
+              ],
+              minzoom: 0,
+              maxzoom: 13,
+              attribution:
+                '<a href="https://www.data.jma.go.jp/developer/gis.html">気象庁</a>',
+            },
+          },
+          layers: [
+            {
+              id: "gsi-raster",
+              type: "raster",
+              source: "gsi-raster",
+            },
+            {
+              id: "city-fill",
+              type: "fill",
+              source: "jma",
+              "source-layer": "city",
+              paint: {
+                "fill-color": "#777733",
+                "fill-opacity": 0.5,
+              },
+            },
+            {
+              id: "city-line",
+              type: "line",
+              source: "jma",
+              "source-layer": "city",
+              paint: {
+                "line-color": "#00aaff",
+                "line-width": 1,
+              },
+            },
+            {
+              id: "maritime-fill",
+              type: "fill",
+              source: "jma",
+              "source-layer": "maritime",
+              paint: {
+                "fill-color": "#00aaff",
+                "fill-opacity": 0.2,
+              },
+            },
+            {
+              id: "maritime-line",
+              type: "line",
+              source: "jma",
+              "source-layer": "maritime",
+              paint: {
+                "line-color": "#cccc00",
+              },
+            },
+            {
+              id: "matome-line",
+              type: "line",
+              source: "jma",
+              "source-layer": "matome",
+              paint: {
+                "line-color": "#ff7700",
+                "line-width": 1,
+              },
+            },
+            {
+              id: "fuken-line",
+              type: "line",
+              source: "jma",
+              "source-layer": "fuken",
+              paint: {
+                "line-color": "#77dd00",
+                "line-width": 5,
+              },
+            },
+            {
+              id: "ichiji-line",
+              type: "line",
+              source: "jma",
+              "source-layer": "ichiji",
+              paint: {
+                "line-color": "#ff00dd",
+                "line-width": 2,
+              },
+            },
+          ],
+          // terrain: {
+          //   source: "terrain",
+          //   exaggeration: 1.5,
+          // },
+        },
+        center: [137.3543, 37.062],
+        zoom: 6,
+        antialias: true,
+      });
+    </script>
+  </body>
+</html>

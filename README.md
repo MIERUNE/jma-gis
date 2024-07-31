@@ -4,6 +4,10 @@
 
 気象庁の[予報区等GISデータ](https://www.data.jma.go.jp/developer/gis.html)をもとに、ベクタータイルなどを生成します。
 
+- Demo: https://jma-assets.mierune.dev/tiles/index.html
+- 気象関係: https://jma-assets.mierune.dev/tiles/mete/{z}/{x}/{y}.pbf
+- 地震・津波関係: https://jma-assets.mierune.dev/tiles/seis/{z}/{x}/{y}.pbf
+
 具体的には以下を行います:
 
 - 「予報区等GISデータ」のダウンロード
@@ -18,6 +22,7 @@ TODO:
 - PMTiles の生成？
 - Cloudflare R2 へのアップロード
 - Amazon S3 へのアップロード
+- ベクタタイルの表示デモ
 - etc.
 
 ## Development
@@ -40,9 +45,9 @@ TODO:
 
 ### 仕様
 
-(いまのところは「全部入り」のタイルセットを作ります)
-
 各予報区区分が、それぞれ以下のレイヤ名で格納されています。
+
+気象関係: `https://jma-assets.mierune.dev/tiles/mete/{z}/{x}/{y}.pbf`
 
 | 元のShapefile | レイヤ名 |
 | -- | -- |
@@ -51,12 +56,18 @@ TODO:
 | 一次細分区域等.shp | ichiji |
 | 市町村等をまとめた地域等.shp | matome |
 | 市町村等（＊＊＊）.shp | city |
+| 地方海上予報区.shp | maritime |
+
+
+地震・津波関係: `https://jma-assets.mierune.dev/tiles/seis/{z}/{x}/{y}.pbf`
+
+| 元のShapefile | レイヤ名 |
+| -- | -- |
 | 緊急地震速報／地方予報区.shp | eew_chihou |
 | 緊急地震速報／府県予報区.shp | eew_fuken |
 | 地震情報／細分区域.shp | seis_saibun |
 | 地震情報／都道府県等.shp | seis_prefecture |
 | 津波予報区.shp | tsunami |
-| 地方海上予報区.shp | maritime |
 
 各 Feature は `name` (区域名) と `code` (区域コード) の属性を持ちます。
 
@@ -113,3 +124,9 @@ make update_es_index
     }
 ```
 -->
+
+## Authors
+
+- MIERUNE Inc.
+- Taku Fukada (original author)
+

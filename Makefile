@@ -6,7 +6,9 @@ help:
 
 XYZTILE_VERSION = v0.1
 S3_BASE = s3://YOUR-BUCKET-NAME/jma-polygons
-LAYERS = chihou city eew_chihou eew_fuken fuken ichiji matome maritime seis_prefecture seis_saibun tsunami
+METE_LAYERS = chihou city fuken ichiji matome maritime
+SEIS_LAYERS = eew_chihou eew_fuken seis_prefecture seis_saibun tsunami
+LAYERS = ${METE_LAYERS} ${SEIS_LAYERS}
 CITY_VARIANTS = 市町村等（気象警報等） 市町村等（大雨危険度） 市町村等（土砂災害警戒情報） 市町村等（指定河川洪水予報） 市町村等（地震津波関係） 市町村等（火山関係）
 
 OUTPUT = output
@@ -17,6 +19,9 @@ XYZTILES_BASE = ${OUTPUT}/xyz
 MBTILES_BASE = ${OUTPUT}/mbtiles
 PMTILES_BASE = ${OUTPUT}/pmtiles
 PROPS_FILES = $(addprefix ${PROPS_BASE}/, $(addsuffix .json, $(LAYERS)))
+
+METE_GEOJSON_FILES = $(addprefix ${GEOJSON_BASE}/, $(addsuffix .json, $(METE_LAYERS)))
+SEIS_GEOJSON_FILES = $(addprefix ${GEOJSON_BASE}/, $(addsuffix .json, $(SEIS_LAYERS)))
 GEOJSON_FILES = $(addprefix ${GEOJSON_BASE}/, $(addsuffix .json, $(LAYERS)))
 
 init:  # プロジェクトのセットアップ
@@ -29,13 +34,11 @@ geojson: ${GEOJSON_FILES} ## GeoJSON を生成する
 
 shape_properties: ${PROPS_FILES} ## 各シェイプの面積などを計算する
 
-xyztiles: ${GEOJSON_FILES}  ## MVT (XYZ) を生成する
-	mkdir -p ${XYZTILES_BASE}/all/
-	tippecanoe -z13 --simplification=2 --detect-shared-borders --no-tile-compression -f -P -e ${XYZTILES_BASE}/all/ $^
+xyztiles: ${XYZTILES_BASE}/mete/metadata.json ${XYZTILES_BASE}/seis/metadata.json  ## MVT (XYZ) を生成する
 
-mbtiles: ${MBTILES_BASE}/all.mbtiles ## MBTilesを生成する
+mbtiles: ${MBTILES_BASE}/mete.mbtiles ${MBTILES_BASE}/seis.mbtiles ## MBTilesを生成する
 
-pmtiles: ${PMTILES_BASE}/all.pmtiles ## PMTilesを生成する
+pmtiles: ${PMTILES_BASE}/mete.pmtiles ${PMTILES_BASE}/seis.pmtiles ## PMTilesを生成する
 
 update_es_index:  ## Elasticsearch のインデクスを作り直す
 	python tools/es/make_shape_index.py
@@ -43,9 +46,26 @@ update_es_index:  ## Elasticsearch のインデクスを作り直す
 # upload-to-s3: ${XYZ_BASE}/metadata.json ## Amazon S3 にアップロードする
 # 	aws s3 sync ${XYZ_BASE} ${S3_BASE}/$(XYZTILE_VERSION)/ --include "*" --cache-control "max-age=3600"
 
-${MBTILES_BASE}/all.mbtiles: ${GEOJSON_FILES} ## ベクタータイルを生成する
+# upload-to-r2: ${XYZ_BASE}/metadata.json ## Cloudflare R2 にアップロードする
+#	aws s3 sync ./output/xyz/ s3://jma-assets/tiles/ --region=auto --endpoint-url=https://e554a5d21ba7a2e28f5b3e1cec9a8532.r2.cloudflarestorage.com
+#	aws s3 cp ./demo/index.html s3://jma-assets/tiles/ --region=auto --endpoint-url=https://e554a5d21ba7a2e28f5b3e1cec9a8532.r2.cloudflarestorage.com
+
+
+${XYZTILES_BASE}/mete/metadata.json: ${METE_GEOJSON_FILES}
+	mkdir -p ${XYZTILES_BASE}/mete/
+	tippecanoe -z13 --simplification=10 --simplify-only-low-zooms --no-simplification-of-shared-nodes --no-tile-compression -f -P -e ${XYZTILES_BASE}/mete/ $^
+
+${XYZTILES_BASE}/seis/metadata.json: ${SEIS_GEOJSON_FILES}
+	mkdir -p ${XYZTILES_BASE}/seis/
+	tippecanoe -z13 --simplification=10 --simplify-only-low-zooms --no-simplification-of-shared-nodes --no-tile-compression -f -P -e ${XYZTILES_BASE}/seis/ $^
+
+${MBTILES_BASE}/mete.mbtiles: ${METE_GEOJSON_FILES}
 	mkdir -p ${MBTILES_BASE}
-	tippecanoe -z13 --simplification=2 --detect-shared-borders --no-tile-compression -f -P -o $@ $^
+	tippecanoe -z13 --simplification=7 --simplify-only-low-zooms --no-simplification-of-shared-nodes --no-tile-compression -f -P -o $@ $^
+
+${MBTILES_BASE}/seis.mbtiles: ${SEIS_GEOJSON_FILES}
+	mkdir -p ${MBTILES_BASE}
+	tippecanoe -z13 --simplification=7 --simplify-only-low-zooms --no-simplification-of-shared-nodes --no-tile-compression -f -P -o $@ $^
 
 ${PMTILES_BASE}/%.pmtiles: ${MBTILES_BASE}/%.mbtiles
 	mkdir -p ${PMTILES_BASE}
