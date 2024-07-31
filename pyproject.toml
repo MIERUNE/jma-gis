@@ -1,0 +1,35 @@
+[project]
+name = "jma-gis-polygons"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "MIERUNE Inc.", email = "info@mierune.co.jp" },
+    { name = "Taku Fukada", email = "naninunenor@gmail.com" }
+]
+dependencies = [
+]
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = [
+    "geopandas>=1.0.1",
+    "matplotlib>=3.9.1",
+    "cartopy>=0.23.0",
+    "requests>=2.32.3",
+]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/jma_gis"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B"]
+ignore = ["B023"]

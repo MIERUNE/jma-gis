@@ -1,0 +1,10 @@
+.DS_Store
+.vscode/
+.idea/
+
+.venv
+.pyc
+__pycache__
+.ruff_cache
+
+/output/
